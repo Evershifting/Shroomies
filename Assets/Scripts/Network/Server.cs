@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static APIs;
 using Random = UnityEngine.Random;
 
 public class Server : MonoBehaviour
@@ -13,7 +12,8 @@ public class Server : MonoBehaviour
     [SerializeField] private float _connectionDelay = 1f;
 
     private static float ConnectionDelay;
-    private float currentGrowthTimer = 0f;
+    private float _currentGrowthTimer = 0f;
+    private List<string> _usernames = new List<string>();
 
     public static Server Instance;
 
@@ -29,16 +29,33 @@ public class Server : MonoBehaviour
 
     private void Update()
     {
-        currentGrowthTimer += Time.deltaTime;
-        if (currentGrowthTimer >= _resourceGrowthTimer)
+        _currentGrowthTimer += Time.deltaTime;
+        if (_currentGrowthTimer >= _resourceGrowthTimer)
         {
-            currentGrowthTimer = 0;
-            foreach (string res in GameManager.Resources)
+            _currentGrowthTimer = 0;
+            //TODO: Логика для сборки-разборки списка имен;
+
+            if (!PlayerPrefs.GetString("Usernames").Contains(GameManager.Username))
             {
-                if (!PlayerPrefs.HasKey(string.Format("{0}~{1}", GameManager.username, res)))
-                    PlayerPrefs.SetInt(string.Format("{0}~{1}", GameManager.username, res), 0);
-                PlayerPrefs.SetInt(string.Format("{0}~{1}", GameManager.username, res), PlayerPrefs.GetInt(string.Format("{0}~{1}", GameManager.username, res)) + 1);
+                string names = PlayerPrefs.GetString("Usernames") + GameManager.Username + "~";
+                PlayerPrefs.SetString("Usernames", names);
             }
+            if (_usernames.Count < PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries).Length)
+            {
+                _usernames.Clear();
+                _usernames.AddRange(PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries));
+            }
+
+            foreach (string name in _usernames)
+            {
+                foreach (string res in GameManager.Resources)
+                {
+                    if (!PlayerPrefs.HasKey(string.Format("{0}~{1}", name, res)))
+                        PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), 0);
+                    PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), PlayerPrefs.GetInt(string.Format("{0}~{1}", name, res)) + 1);
+                }
+            }
+
         }
     }
 
@@ -53,12 +70,14 @@ public class Server : MonoBehaviour
     {
         yield return new WaitForSeconds(_connectionDelay * Random.Range(0.8f, 1.2f)); //artificial delay to simulate latency
 
-        if (PlayerPrefs.HasKey(string.Format("{0}~{1}", GameManager.username, resource)))
+        if (PlayerPrefs.HasKey(string.Format("{0}~{1}", GameManager.Username, resource)))
         {
-            Dictionary<string, string> body = new Dictionary<string, string>();
-            body.Add("resource", resource);
-            body.Add("value", PlayerPrefs.GetInt(string.Format("{0}~{1}", GameManager.username, resource)).ToString());
-            body.Add("username", GameManager.username);
+            Dictionary<string, string> body = new Dictionary<string, string>
+            {
+                { "resource", resource },
+                { "value", PlayerPrefs.GetInt(string.Format("{0}~{1}", GameManager.Username, resource)).ToString() },
+                { "username", GameManager.Username }
+            };
 
             string serializedBody = JsonConvert.SerializeObject(body);
 

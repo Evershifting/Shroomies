@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     private float _resourceCheckTimer = 0f;
 
 
-    public static string username = "User";
+    public static string Username = "User";
 
     public static List<string> Resources { get; private set; }
     public static int Score { get; set; } = 0;
@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        UIManager.Instance.SetLoginBlock(username);
+        UIManager.Instance.SetLoginBlock(Username);
 
         foreach (string resource in Resources)
         {
@@ -56,10 +56,10 @@ public class GameManager : MonoBehaviour
     public static void Login(string username)
     {
         Debug.Log(string.Format("Username is {0}", username));
-        if (!string.Equals(username, GameManager.username))
+        if (!string.Equals(username, GameManager.Username))
         {
             Debug.Log(username);
-            GameManager.username = username;
+            GameManager.Username = username;
             UpdateResourceValues();
         }
     }

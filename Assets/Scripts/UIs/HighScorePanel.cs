@@ -45,6 +45,6 @@ public class HighScorePanel : MonoBehaviour
     {
         GameObject go = Instantiate(_scoreRecordingPrefab, _scoreRecordingsParent.transform);
         go.transform.SetAsFirstSibling();
-        go.GetComponent<IHighScoreRecord>().Init(GameManager.username, value);
+        go.GetComponent<IHighScoreRecord>().Init(GameManager.Username, value);
     }
 }

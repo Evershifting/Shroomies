@@ -36,14 +36,18 @@ public class APIs : MonoBehaviour
     {
         //Guys, I created this method specifically to fullfill requirements from assignment. That's why it's so awkward and utterly bad
         //Proper way of implementing highscores as summ of resources values is on a server side. So only one request/responce is required
+        List<Coroutine> routines = new List<Coroutine>();
 
-        Coroutine a, b, c; 
-        a = StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[0], OnResponse));
-        b = StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[1], OnResponse));
-        c = StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[2], OnResponse));
-        yield return a;
-        yield return b;
-        yield return c;
+        for (int i = 0; i < GameManager.Resources.Count; i++)
+        {
+            routines.Add(StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[i], OnResponse)));
+        }
+
+        foreach (Coroutine coroutine in routines)
+        {
+            yield return coroutine;
+        }
+
         OnGetAllScores?.Invoke();
     }
 
@@ -58,7 +62,7 @@ public class APIs : MonoBehaviour
         Dictionary<string, string> body = new Dictionary<string, string>();
         body.Add("resource", resource);
         body.Add("value", value.ToString());
-        body.Add("username", GameManager.username);
+        body.Add("username", GameManager.Username);
 
         string serializedBody = JsonConvert.SerializeObject(body);
 

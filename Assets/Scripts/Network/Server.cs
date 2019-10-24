@@ -91,7 +91,22 @@ public class Server : MonoBehaviour
         }
         Debug.Log(resource);
     }
+    public ServerResponce GetResourceValue(string resource)
+    {
+        if (PlayerPrefs.HasKey(string.Format("{0}~{1}", GameManager.Username, resource)))
+        {
+            Dictionary<string, string> body = new Dictionary<string, string>
+            {
+                { "resource", resource },
+                { "value", PlayerPrefs.GetInt(string.Format("{0}~{1}", GameManager.Username, resource)).ToString() },
+                { "username", GameManager.Username }
+            };
 
+            string serializedBody = JsonConvert.SerializeObject(body);
+            return new ServerResponce(serializedBody);
+        }
+        return new ServerResponce(true);
+    }
     public void SetResource(string JSONstring, Type type, Action OnResponse)
     {
         StartCoroutine(SetResourceCoroutine(JSONstring, type, OnResponse));
@@ -101,9 +116,8 @@ public class Server : MonoBehaviour
         yield return new WaitForSeconds(_connectionDelay * Random.Range(0.8f, 1.2f)); //artificial delay to simulate latency
 
         var response = JsonConvert.DeserializeObject(JSONstring, type);
-        ResourceResponse resourceResponce = response as ResourceResponse;
 
-        if (resourceResponce != null)
+        if (response is ResourceResponse resourceResponce)
         {
             PlayerPrefs.SetInt(string.Format("{0}~{1}", resourceResponce.username, resourceResponce.resource), resourceResponce.value);
 

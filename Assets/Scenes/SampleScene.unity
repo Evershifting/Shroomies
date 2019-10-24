@@ -1969,7 +1969,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _resourceGrowthTimer: 1
-  _connectionDelay: 3.26
+  _connectionDelay: 0
 --- !u!4 &1561986223
 Transform:
   m_ObjectHideFlags: 0

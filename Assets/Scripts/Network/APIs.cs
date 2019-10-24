@@ -29,8 +29,8 @@ public class APIs : MonoBehaviour
     }
 
     public ServerResponce GetResource(string resource)
-    {
-        return null;
+    {        
+        return Server.Instance.GetResourceValue(resource);
     }
 
     public void GetScore(Action<string> OnResponse, Action OnGetAllScores)
@@ -46,11 +46,13 @@ public class APIs : MonoBehaviour
             routines.Add(StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[i], OnResponse)));
         }
 
+        Debug.Log("Before Routine");
         foreach (Coroutine coroutine in routines)
         {
             yield return coroutine;
             Debug.Log("Routine end");
         }
+        Debug.Log("After Routine");
 
         OnGetAllScores?.Invoke();
     }
@@ -80,8 +82,19 @@ public class APIs : MonoBehaviour
 
 public class ServerResponce
 {
-    bool isError;
-    object responce;
+    public bool isError;
+    public object responce;
+
+    public ServerResponce(bool isError)
+    {
+        this.isError = isError;
+        responce = null;
+    }
+    public ServerResponce(object responce)
+    {
+        this.responce = responce;
+        isError = false;
+    }
 }
 
 public class ResourceResponse

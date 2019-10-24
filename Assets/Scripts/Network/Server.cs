@@ -29,36 +29,43 @@ public class Server : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log("Update");
         _currentGrowthTimer += Time.deltaTime;
         if (_currentGrowthTimer >= _resourceGrowthTimer)
         {
             _currentGrowthTimer = 0;
-            //TODO: Логика для сборки-разборки списка имен;
 
-            if (!PlayerPrefs.GetString("Usernames").Contains(GameManager.Username))
-            {
-                string names = PlayerPrefs.GetString("Usernames") + GameManager.Username + "~";
-                PlayerPrefs.SetString("Usernames", names);
-            }
-            if (_usernames.Count < PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries).Length)
-            {
-                _usernames.Clear();
-                _usernames.AddRange(PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-
-            foreach (string name in _usernames)
-            {
-                foreach (string res in GameManager.Resources)
-                {
-                    if (!PlayerPrefs.HasKey(string.Format("{0}~{1}", name, res)))
-                        PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), 0);
-                    PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), PlayerPrefs.GetInt(string.Format("{0}~{1}", name, res)) + 1);
-                }
-            }
-
+            CheckName();
+            GrowResources();
         }
     }
 
+    private void CheckName()
+    {
+        if (!PlayerPrefs.GetString("Usernames").Contains(GameManager.Username))
+        {
+            string names = PlayerPrefs.GetString("Usernames") + GameManager.Username + "~";
+            PlayerPrefs.SetString("Usernames", names);
+        }
+        if (_usernames.Count < PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries).Length)
+        {
+            _usernames.Clear();
+            _usernames.AddRange(PlayerPrefs.GetString("Usernames").Split(new char[] { '~' }, StringSplitOptions.RemoveEmptyEntries));
+        }
+    }
+
+    private void GrowResources()
+    {
+        foreach (string name in _usernames)
+        {
+            foreach (string res in GameManager.Resources)
+            {
+                if (!PlayerPrefs.HasKey(string.Format("{0}~{1}", name, res)))
+                    PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), 0);
+                PlayerPrefs.SetInt(string.Format("{0}~{1}", name, res), PlayerPrefs.GetInt(string.Format("{0}~{1}", name, res)) + 1);
+            }
+        }
+    }
 
     public void GetResource(string resource, Action<string> OnResponse)
     {
@@ -80,9 +87,9 @@ public class Server : MonoBehaviour
             };
 
             string serializedBody = JsonConvert.SerializeObject(body);
-
             OnResponse?.Invoke(serializedBody);
         }
+        Debug.Log(resource);
     }
 
     public void SetResource(string JSONstring, Type type, Action OnResponse)

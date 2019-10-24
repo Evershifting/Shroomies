@@ -27,15 +27,18 @@ public class APIs : MonoBehaviour
 
         yield return null;
     }
-    public void GetScore(Action<string> OnResponse, Action OnGetAllScores)
+
+    public ServerResponce GetResource(string resource)
     {
-        StartCoroutine(GetHighScoresCoroutine(OnResponse, OnGetAllScores));
+        return null;
     }
 
-    private IEnumerator GetHighScoresCoroutine(Action<string> OnResponse, Action OnGetAllScores)
+    public void GetScore(Action<string> OnResponse, Action OnGetAllScores)
     {
-        //Guys, I created this method specifically to fullfill requirements from assignment. That's why it's so awkward and utterly bad
-        //Proper way of implementing highscores as summ of resources values is on a server side. So only one request/responce is required
+        StartCoroutine(GetScoreCoroutine(OnResponse, OnGetAllScores));
+    }
+    private IEnumerator GetScoreCoroutine(Action<string> OnResponse, Action OnGetAllScores)
+    {
         List<Coroutine> routines = new List<Coroutine>();
 
         for (int i = 0; i < GameManager.Resources.Count; i++)
@@ -46,6 +49,7 @@ public class APIs : MonoBehaviour
         foreach (Coroutine coroutine in routines)
         {
             yield return coroutine;
+            Debug.Log("Routine end");
         }
 
         OnGetAllScores?.Invoke();
@@ -59,10 +63,12 @@ public class APIs : MonoBehaviour
     {
         Type type = typeof(ResourceResponse);
 
-        Dictionary<string, string> body = new Dictionary<string, string>();
-        body.Add("resource", resource);
-        body.Add("value", value.ToString());
-        body.Add("username", GameManager.Username);
+        Dictionary<string, string> body = new Dictionary<string, string>
+        {
+            { "resource", resource },
+            { "value", value.ToString() },
+            { "username", GameManager.Username }
+        };
 
         string serializedBody = JsonConvert.SerializeObject(body);
 
@@ -72,6 +78,11 @@ public class APIs : MonoBehaviour
     }
 }
 
+public class ServerResponce
+{
+    bool isError;
+    object responce;
+}
 
 public class ResourceResponse
 {

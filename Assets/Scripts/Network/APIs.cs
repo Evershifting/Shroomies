@@ -16,43 +16,35 @@ public class APIs : MonoBehaviour
             Destroy(gameObject);
     }
 
-
-    public void GetResource(string resource, Action<string> OnResponse)
+    public void GetResource(string resource, Action<ResourceResponse> OnResponse)
     {
         StartCoroutine(GetResourceCoroutine(resource, OnResponse));
     }
-    private IEnumerator GetResourceCoroutine(string resource, Action<string> OnResponse)
+    private IEnumerator GetResourceCoroutine(string resource, Action<ResourceResponse> OnResponse)
     {
-        Server.Instance.GetResource(resource, OnResponse);
-
-        yield return null;
+        ServerResponce responce = Server.Instance.GetResourceValue(resource);
+        yield return responce;
+        UnfoldResourceAnswer(OnResponse, responce, resource);
     }
 
-    public ServerResponce GetResource(string resource)
-    {        
-        return Server.Instance.GetResourceValue(resource);
-    }
-
-    public void GetScore(Action<string> OnResponse, Action OnGetAllScores)
+    public void GetScore(Action<ResourceResponse> OnResponse, Action OnGetAllScores)
     {
         StartCoroutine(GetScoreCoroutine(OnResponse, OnGetAllScores));
     }
-    private IEnumerator GetScoreCoroutine(Action<string> OnResponse, Action OnGetAllScores)
+    private IEnumerator GetScoreCoroutine(Action<ResourceResponse> OnResponse, Action OnGetAllScores)
     {
-        List<Coroutine> routines = new List<Coroutine>();
+        List<ServerResponce> responces = new List<ServerResponce>();
 
         for (int i = 0; i < GameManager.Resources.Count; i++)
         {
-            routines.Add(StartCoroutine(Server.Instance.GetResourceCoroutine(GameManager.Resources[i], OnResponse)));
+            responces.Add(Server.Instance.GetResourceValue(GameManager.Resources[i]));
         }
 
-        Debug.Log("Before Routine");
-        foreach (Coroutine coroutine in routines)
+        foreach (ServerResponce responce in responces)
         {
-            yield return coroutine;
-            Debug.Log("Routine end");
+            yield return responce;
+            UnfoldResourceAnswer(OnResponse, responce);
         }
-        Debug.Log("After Routine");
 
         OnGetAllScores?.Invoke();
     }
@@ -78,22 +70,43 @@ public class APIs : MonoBehaviour
 
         yield return null; //we must wait for a server's answer in this yield 
     }
+    
+    private static void UnfoldResourceAnswer(Action<ResourceResponse> OnResponse, ServerResponce responce, string resource = "")
+    {
+        if (responce.Error)
+        {
+            if (!string.IsNullOrEmpty(resource))
+                Debug.LogErrorFormat("There is no {0}", resource);
+            else
+                Debug.LogErrorFormat("There is no resource");
+        }
+        else
+        {
+            Type type = typeof(ResourceResponse);
+            var deserializedResponse = JsonConvert.DeserializeObject(responce.responce, type);
+
+            if (deserializedResponse is ResourceResponse resourceResponce)
+            {
+                OnResponse?.Invoke(resourceResponce);
+            }
+        }
+    }
 }
 
 public class ServerResponce
 {
-    public bool isError;
-    public object responce;
+    public bool Error;
+    public string responce;
 
     public ServerResponce(bool isError)
     {
-        this.isError = isError;
+        this.Error = isError;
         responce = null;
     }
-    public ServerResponce(object responce)
+    public ServerResponce(string responce)
     {
         this.responce = responce;
-        isError = false;
+        Error = false;
     }
 }
 

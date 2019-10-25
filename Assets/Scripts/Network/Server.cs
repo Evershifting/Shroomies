@@ -29,7 +29,6 @@ public class Server : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log("Update");
         _currentGrowthTimer += Time.deltaTime;
         if (_currentGrowthTimer >= _resourceGrowthTimer)
         {
@@ -72,8 +71,7 @@ public class Server : MonoBehaviour
         StartCoroutine(GetResourceCoroutine(resource, OnResponse));
     }
 
-    //left it public to fullfill TA requrements
-    public IEnumerator GetResourceCoroutine(string resource, Action<string> OnResponse)
+    private IEnumerator GetResourceCoroutine(string resource, Action<string> OnResponse)
     {
         yield return new WaitForSeconds(_connectionDelay * Random.Range(0.8f, 1.2f)); //artificial delay to simulate latency
 

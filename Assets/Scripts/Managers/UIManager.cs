@@ -32,17 +32,11 @@ public class UIManager : MonoBehaviour
         _loginBlock = GetComponentInChildren<ILoginBlock>();
     }
 
-    private void OnGetScore(string response)
+    private void OnGetScore(ResourceResponse response)
     {
         if (response != null)
         {
-            Type type = typeof(ResourceResponse);
-            var deserializedResponse = JsonConvert.DeserializeObject(response, type);
-
-            if (deserializedResponse is ResourceResponse resourceResponce)
-            {
-                GameManager.Score += resourceResponce.value;
-            }
+            GameManager.Score += response.value;
         }
     }
 
@@ -67,18 +61,12 @@ public class UIManager : MonoBehaviour
         _loginBlock.SetLoginBlock(username);
     }
 
-    public void UpdateResource(string responce)
+    public void UpdateResource(ResourceResponse responce)
     {
         if (responce != null)
         {
-            Type type = typeof(ResourceResponse);
-            var response = JsonConvert.DeserializeObject(responce, type);
-
-            if (response is ResourceResponse resourceResponce)
-            {
-                if (_resourcesCounters.ContainsKey(resourceResponce.resource))
-                    _resourcesCounters[resourceResponce.resource].ResourceAmount.text = resourceResponce.value.ToString();
-            }
+            if (_resourcesCounters.ContainsKey(responce.resource))
+                _resourcesCounters[responce.resource].ResourceAmount.text = responce.value.ToString();
         }
     }
 
